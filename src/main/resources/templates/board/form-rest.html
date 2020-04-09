@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Board Form</title>
+<link rel="stylesheet" th:href="@{/css/base.css}" />
+<link rel="stylesheet" th:href="@{/css/bootstrap.min.css}" />
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+	integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+	crossorigin="anonymous">
+<style>
+/*html{position:relative;min-height:100%;}*/
+body {
+	margin-bottom: 60px;
+}
+
+body>.container {
+	padding: 60px 15px 0;
+}
+</style>
+</head>
+<body>
+
+	<div class="container">
+		<div class="page-header">
+			<h1>게시글 등록</h1>
+		</div>
+		<br /> <input id="board_id" type="hidden" th:value="${board?.id}" />
+
+		<!-- null 이면 빈값으로 출력-->
+		<!--    <input id="board_create_date" type="hidden" th:value="${board?.createdDate}"/>-->
+		<table class="table">
+			<!--<tr>
+            <th style="padding:13px 0 0 15px">게시판 선택</th>
+            <td>
+                <div class="pull-left">
+                    <select class="form-control input-sm" id="board_type">
+                        <option>--분류--</option>
+                        <option th:value="notice" th:selected="${board?.boardType?.name() == 'notice'}">공지사항</option>
+                        <option th:value="free" th:selected="${board?.boardType?.name() == 'free'}">자유게시판</option>
+                    </select>
+                </div>
+            </td>
+        </tr>
+        -->
+			<tr>
+				<th style="padding: 13px 0 0 15px;">제목</th>
+				<td><input form="update-form" id="board_title" type="text"
+					class="col-md-1 form-control input-sm" placeholder="5자에서 20자 이내로 입력해주세요." th:field="*{board.title}" />
+				</td>
+			</tr>
+
+			<tr>
+				<th style="padding: 13px 0 0 15px;">이메일</th>
+				<td><input form="update-form" id="board_email" type="text"
+						   class="col-md-1 form-control input-sm" th:field="*{board.email}" />
+				</td>
+			</tr>
+
+
+			<tr>
+				<th style="padding:13px 0 0 15px;">내용</th>
+				<td>
+					<textarea form="update-form" id="board_content" class="col-md-1 form-control input-sm" maxlength="140" rows="7" style="height: 200px;"
+							  th:field="*{board.content}"></textarea><span class="help-block"></span>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td></td>
+			</tr>
+		</table>
+
+		<table class="table table-hover">
+			<tbody>
+				<tr th:each="reply : ${replyList}">
+					<td>
+						<span th:text="${reply.content}"></span>
+					</td>
+					<td>
+						<span th:text="${reply.writer}"></span>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+
+
+
+		<div class="pull-left">
+			<a href="/board/list" class="btn btn-default">목록으로</a>
+		</div>
+		<div class="pull-right">
+			<button th:if="!${board?.id}" type="button" class="btn btn-primary"
+				id="insert">저장</button>
+<!--			<button th:if="${board?.id}" type="button" class="btn btn-info"
+				id="update">수정</button>-->
+			<form id="update-form" th:action="@{/board/__${board.id}__}"  th:method="post" th:object="${board}">
+				<button type="submit">수정</button>
+			</form>
+
+			<button th:if="${board?.id}" type="button" class="btn btn-danger"
+				id="delete">삭제</button>
+		</div>
+	</div>
+
+
+
+	<script th:src="@{/js/jquery.min.js}"></script>
+	<script th:if="!${board?.id}">
+		$('#insert').click(function() {
+			var jsonData = JSON.stringify({
+				title : $('#board_title').val(),
+				email : $('#board_email').val(),
+				content : $('#board_content').val()
+			//boardType : $('#board_type option:selected').val()
+			});
+			$.ajax({
+				url : "http://localhost:8080/api/board",
+				type : "POST",
+				data : jsonData,
+				contentType : "application/json",
+				dataType : "json",
+				success : function() {
+					alert('저장 성공!');
+					location.href = '/board/list';
+				},
+				error : function(request, status, error) {
+					alert('저장 실패!');
+				}
+			});
+		});
+	</script>
+	<script th:if="${board?.id}">
+		$('#update').click(
+				function() {
+					var jsonData = JSON.stringify({
+						title : $('#board_title').val(),
+						email : $('#board_email').val(),
+						content : $('#board_content').val()
+					});
+					$.ajax({
+						url : "http://localhost:8080/api/board/"+ $('#board_id').val(),
+						type : "PUT",
+						data : jsonData,
+						contentType : "application/json",
+						dataType : "json",
+						success : function() {
+							alert('수정 성공!');
+							location.href = '/board/list';
+						},
+						error : function() {
+							alert('수정 실패!');
+						}
+					});
+				});
+		$('#delete').click(
+				function() {
+					$.ajax({
+						url : "http://localhost:8080/api/board/"+ $('#board_id').val(),
+						type : "DELETE",
+						success : function() {
+							alert('삭제 성공!');
+							location.href = '/board/list';
+						},
+						error : function() {
+							alert('삭제 실패!');
+						}
+					});
+				});
+	</script>
+</body>
+</html>

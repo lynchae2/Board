@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Board List</title>
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+          crossorigin="anonymous">
+    <style>
+        /*html{position:relative;min-height:100%;}*/
+        body {
+            margin-bottom: 60px;
+        }
+
+        body > .container {
+            padding: 60px 15px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="page-header">
+        <h1 style="align-content: center">게시판</h1>
+    </div>
+    <div class="pull-right" style="width:100px; margin:10px 0;">
+        <a href="/board" class="btn btn-primary btn-block">등록</a>
+    </div>
+    <br/>
+    <br/>
+    <br/>
+
+    <div id="main">
+        <table class="table table-hover">
+            <thead>
+            <tr>
+                <th class="col-md-1"> 번호</th>
+                <th class="col-md-5"> 제목</th>
+                <th class="col-md-3"> 작성자 이메일</th>
+            </tr>
+            </thead>
+
+            <tbody>
+<!--            <tr th:if="${boardList.isEmpty()}">
+                <td colspan="3"> 게시글이 존재하지 않습니다.</td>
+            </tr>-->
+
+            <tr th:each="board : ${boardList}">
+                <td><span th:text="${board.id}">id</span></td>
+                <!-- localhost:8080/board?id=2 로 이동  -->
+                <td><a th:href="'/board?id=' + ${board.id}" th:text="${board.title}"></a></td>
+                <td><span th:text="${board.email}">email</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!--페이지네이션-->
+<nav aria-label="Page navigation" style="text-align:center;">
+    <!-- 한 블럭에서 시작 페이지 번호 : startNumber, 끝 페이지 번호 : endNumber-->
+    <ul class="pagination" th:with="startNumber=${T(Math).floor(boardList.number/10)}*10+1,
+    endNumber=(${boardList.totalPages} > ${startNumber}+9) ? ${startNumber}+9 : ${boardList.totalPages}">
+        <!-- << -->
+        <li><a aria-label="Previous" href="/board/list?page=1">&laquo;</a></li>
+
+        <li th:style="${boardList.first} ? 'display:none'">
+            <a th:href="@{/board/list(page=${boardList.number})}">&lsaquo;</a> <!--boardList?page=1 이런식으로 연결됨-->
+        </li><!-- 현재 2페이지면 boardList.number+1이 현재 2 페이지니까  이전 페이지인 1 페이지 = number 로 이동  -->
+            <!-- number는 0부터 시작하기 때문에 -->
+
+        <li th:each="page :${#numbers.sequence(startNumber, endNumber)}"
+            th:class="(${page} == ${boardList.number}+1) ? 'active'"><!--페이지가 현재 페이지일 경우-->
+            <a th:href="@{/board/list(page=${page})}" th:text="${page}"><span class="sr-only"></span></a>
+        </li>
+
+        <li th:style="${boardList.last} ? 'display:none'">
+            <a th:href="@{/board/list(page=${boardList.number}+2)}">&rsaquo;</a>
+        </li>
+        <li><a aria-label="Next" th:href="@{/board/list(page=${boardList.totalPages})}">&raquo;</a></li>
+    </ul>
+</nav>
+</body>
+</html>
